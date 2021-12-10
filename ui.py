@@ -1,19 +1,20 @@
 from PyQt6.QtWidgets import *
-import hashlib as hl
 from user import *
 
-class UI(QWidget):
+class UI(QMainWindow):
     def __init__(self):
         super().__init__()
-
         self.setWindowTitle("Database")
         self.setGeometry(0, 0, 400, 300)
 
-        self.userLayout = QVBoxLayout(self)
-        self.userInputFrame = QFrame(self)
-        self.userButtonFrame = QFrame(self)
-        self.userHiddenFrame1 = QFrame(self)
-        self.userHiddenFrame2 = QFrame(self)
+        self.userWidget = QWidget(self)
+        self.setCentralWidget(self.userWidget)
+
+        self.userLayout = QVBoxLayout(self.userWidget)
+        self.userInputFrame = QFrame(self.userWidget)
+        self.userButtonFrame = QFrame(self.userWidget)
+        self.userHiddenFrame1 = QFrame(self.userWidget)
+        self.userHiddenFrame2 = QFrame(self.userWidget)
         
         self.userLayout.addWidget(self.userInputFrame)
         self.userLayout.addWidget(self.userButtonFrame)
@@ -25,46 +26,78 @@ class UI(QWidget):
         
         self.usernameLabel = QLabel(self.userInputFrame)
         self.usernameLabel.setText("Username:")
+        self.usernameLineEdit = QLineEdit(self.userInputFrame)
         self.passwordLabel = QLabel(self.userInputFrame)
         self.passwordLabel.setText("Password:")
-        self.usernameEntry = QLineEdit(self.userInputFrame)
-        self.passwordEntry = QLineEdit(self.userInputFrame)
-        self.passwordEntry.setEchoMode(QLineEdit.EchoMode.Password)
+        self.passwordLineEdit = QLineEdit(self.userInputFrame)
+        self.passwordLineEdit.setEchoMode(QLineEdit.EchoMode.Password)
 
         self.userInputLayout.addWidget(self.usernameLabel, 1, 1, 1, 1)
+        self.userInputLayout.addWidget(self.usernameLineEdit, 1, 2, 1, 1)
         self.userInputLayout.addWidget(self.passwordLabel, 2, 1, 1, 1)
-        self.userInputLayout.addWidget(self.usernameEntry, 1, 2, 1, 1)
-        self.userInputLayout.addWidget(self.passwordEntry, 2, 2, 1, 1)
+        self.userInputLayout.addWidget(self.passwordLineEdit, 2, 2, 1, 1)
 
         self.userLoginButton = QPushButton(self.userButtonFrame)
-        self.userLoginButton.clicked.connect(self.loginClicked)
+        self.userLoginButton.clicked.connect(lambda: self.loginClicked(self.usernameLineEdit.text(), self.passwordLineEdit.text()))
         self.userLoginButton.setText("Login")
         self.userRegisterButton = QPushButton(self.userButtonFrame)
-        self.userRegisterButton.clicked.connect(self.registerClicked)
+        self.userRegisterButton.clicked.connect(lambda: self.registerClicked(self.usernameLineEdit.text(), self.passwordLineEdit.text()))
         self.userRegisterButton.setText("Register")
 
         self.userButtonLayout.addWidget(self.userLoginButton)
         self.userButtonLayout.addWidget(self.userRegisterButton)
 
-    def loginClicked(self):
-        username = self.usernameEntry.text()
-        password = self.passwordEntry.text()
+        self.dataWidget = QWidget(self)
 
-        if (username.lower() in userdata["username"].values) and (hl.sha256(password.encode()).hexdigest() == userdata.set_index("username").loc[username.lower(), "password"]):
-            print("Logged in successfully!")
-            self.loginUser(username, password)
+        self.dataLayout = QVBoxLayout(self.dataWidget)
+        self.dataDisplayFrame = QFrame(self.dataWidget)
+        self.dataStorageFrame = QFrame(self.dataWidget)
+
+        self.dataLayout.addWidget(self.dataDisplayFrame)
+        self.dataLayout.addWidget(self.dataStorageFrame)
+
+        self.dataDisplayLayout = QGridLayout(self.dataDisplayFrame)
+        self.dataStorageLayout = QVBoxLayout(self.dataStorageFrame)
+
+        self.currentUsernameLabel = QLabel(self.dataDisplayFrame)
+        self.currentUsernameLabel.setText("Username:")
+        self.currentUsernameDisplayLabel = QLabel(self.dataDisplayFrame)
+        self.newPasswordLabel = QLabel(self.dataDisplayFrame)
+        self.newPasswordLabel.setText("Password:")
+        self.newPasswordLineEdit = QLineEdit(self.dataDisplayFrame)
+        self.newPasswordLineEdit.setEchoMode(QLineEdit.EchoMode.Password)
+        self.changePasswordButton = QPushButton(self.dataDisplayFrame)
+        self.changePasswordButton.setText("Change")
+
+        self.dataDisplayLayout.addWidget(self.currentUsernameLabel, 1, 1, 1, 1)
+        self.dataDisplayLayout.addWidget(self.currentUsernameDisplayLabel, 1, 2, 1, 1)
+        self.dataDisplayLayout.addWidget(self.newPasswordLabel, 2, 1, 1, 1)
+        self.dataDisplayLayout.addWidget(self.newPasswordLineEdit, 2, 2, 1, 1)
+        self.dataDisplayLayout.addWidget(self.changePasswordButton, 2, 3, 1, 1)
+
+        self.dataStorageTextEdit = QTextEdit(self.dataStorageFrame)
+
+        self.dataStorageLayout.addWidget(self.dataStorageTextEdit)
+
+        self.dataWidget.hide()
+
+    def loginClicked(self, username, password):
+        usernameMatched = (userdata["username"].str.lower() == username.lower())
+
+        if any(usernameMatched):
+            username = userdata.loc[usernameMatched, "username"].item()
+            if hl.sha256(password.encode()).hexdigest() == userdata.loc[usernameMatched, "password"].item():
+                print("Logged in successfully!")
+                self.loginUser(username, password)
+            else:
+                print("Credentials are invalid!")
         else:
             print("Credentials are invalid!")
 
-    def registerClicked(self):
-        global userdata
-
-        username = self.usernameEntry.text()
-        password = self.passwordEntry.text()
-
+    def registerClicked(self, username, password):
         usernameInvalid = any(c not in usernameReq for c in username)
         usernameLength = len(username)
-        usernameTaken = any(userdata["username"] == username.lower())
+        usernameTaken = any(userdata["username"].str.lower() == username.lower())
 
         passwordInvalid = any(c not in passwordReq for c in password)
         passwordLength = len(password)
@@ -89,19 +122,11 @@ class UI(QWidget):
                 print("Password not secure!")
             else:
                 print("Registered successfully!")
-                self.registerUser(username, password)
-
-    def registerUser(self, username, password):
-        global userdata
-
-        defaultData = {
-            "username": username,
-            "password": hl.sha256(password.encode()).hexdigest()
-        }
-
-        userdata = userdata.append(defaultData, ignore_index = True)
-        print(userdata.set_index("username"))
-        userdata.set_index("username").sort_index().to_excel("userdata.xlsx")
+                registerUser(username, password)
+                self.loginUser(username, password)
 
     def loginUser(self, username, password):
-        pass
+        self.userWidget.hide()
+        self.dataWidget.show()
+        self.setCentralWidget(self.dataWidget)
+        self.currentUsernameDisplayLabel.setText(username)
