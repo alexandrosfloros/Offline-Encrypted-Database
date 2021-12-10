@@ -88,45 +88,45 @@ class UI(QMainWindow):
             username = userdata.loc[usernameMatched, "username"].item()
             if hl.sha256(password.encode()).hexdigest() == userdata.loc[usernameMatched, "password"].item():
                 print("Logged in successfully!")
-                self.loginUser(username, password)
+                self.loginUser(username)
             else:
-                print("Credentials are invalid!")
+                self.error("invalidCredentials")
         else:
-            print("Credentials are invalid!")
+            self.error("invalidCredentials")
 
     def registerClicked(self, username, password):
-        usernameInvalid = any(c not in usernameReq for c in username)
-        usernameLength = len(username)
-        usernameTaken = any(userdata["username"].str.lower() == username.lower())
-
-        passwordInvalid = any(c not in passwordReq for c in password)
-        passwordLength = len(password)
-        passwordInsecure = not any(c in ascii_lowercase for c in password) or not any(c in ascii_uppercase for c in password) or not any(c in digits for c in password) or not any(c in punctuation for c in password)
-        
-        if usernameInvalid:
-            print("Username contains invalid characters!")
-        elif usernameLength < 3:
-            print("Username must be at least 3 characters!")
-        elif usernameLength > 16:
-            print("Username must be at most 16 characters!")
-        elif usernameTaken:
-            print("Username already taken!")
-        else:
-            if passwordInvalid:
-                print("Password contains invalid characters!")
-            elif passwordLength < 8:
-                print("Password must be at least 8 characters")
-            elif passwordLength > 32:
-                print("Password must be at most 32 characters!")
-            elif passwordInsecure:
-                print("Password not secure!")
-            else:
+        if createUsername(username) == "success":
+            if createPassword(password) == "success":
                 print("Registered successfully!")
                 registerUser(username, password)
-                self.loginUser(username, password)
+                self.loginUser(username)
+            else:
+                self.error(createPassword(password))
+        else:
+            self.error(createUsername(username))
 
-    def loginUser(self, username, password):
+    def loginUser(self, username):
         self.userWidget.hide()
         self.dataWidget.show()
         self.setCentralWidget(self.dataWidget)
         self.currentUsernameDisplayLabel.setText(username)
+    
+    def error(self, id):
+        if id == "invalidCredentials":
+            print("Credentials are invalid!")
+        elif id == "invalidUsername":
+            print("Username contains invalid characters!")
+        elif id == "shortUsername":
+            print("Username must be at least 3 characters!")
+        elif id == "longUsername":
+            print("Username must be at most 16 characters!")
+        elif id == "unavailableUsername":
+            print("Username is unavailable!")
+        elif id == "invalidPassword":
+            print("Password contains invalid characters!")
+        elif id == "shortPassword":
+            print("Password must be at least 8 characters")
+        elif id == "longPassword":
+            print("Password must be at most 32 characters!")
+        elif id == "insecurePassword":
+            print("Password is insecure!")
