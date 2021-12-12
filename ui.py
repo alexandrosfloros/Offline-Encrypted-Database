@@ -67,6 +67,7 @@ class UI(QMainWindow):
         self.newPasswordLineEdit = QLineEdit(self.dataDisplayFrame)
         self.newPasswordLineEdit.setEchoMode(QLineEdit.EchoMode.Password)
         self.changePasswordButton = QPushButton(self.dataDisplayFrame)
+        self.changePasswordButton.clicked.connect(lambda: self.changePasswordClicked(self.currentUsernameDisplayLabel.text(), self.newPasswordLineEdit.text()))
         self.changePasswordButton.setText("Change")
 
         self.dataDisplayLayout.addWidget(self.currentUsernameLabel, 1, 1, 1, 1)
@@ -111,6 +112,13 @@ class UI(QMainWindow):
         self.setCentralWidget(self.dataWidget)
         self.currentUsernameDisplayLabel.setText(username)
     
+    def changePasswordClicked(self, username, password):
+        if createPassword(password) == "success":
+            print("Changed password successfully!")
+            changePassword(username, password)
+        else:
+            self.error(createPassword(password))
+
     def error(self, id):
         if id == "invalidCredentials":
             print("Credentials are invalid!")
