@@ -3,12 +3,21 @@ from user import *
 
 class UI(QMainWindow):
     def __init__(self):
+        self.readData()
+
         super().__init__()
         self.setWindowTitle("Database")
         self.setGeometry(0, 0, 400, 300)
 
+        self.mainWidget = QStackedWidget(self)
+        self.setCentralWidget(self.mainWidget)
+
         self.userWidget = QWidget(self)
-        self.setCentralWidget(self.userWidget)
+        self.dataWidget = QWidget(self)
+
+        self.mainWidget.addWidget(self.userWidget)
+        self.mainWidget.addWidget(self.dataWidget)
+        self.mainWidget.setCurrentWidget(self.userWidget)
 
         self.userLayout = QVBoxLayout(self.userWidget)
         self.userInputFrame = QFrame(self.userWidget)
@@ -37,27 +46,28 @@ class UI(QMainWindow):
         self.userInputLayout.addWidget(self.passwordLabel, 2, 1, 1, 1)
         self.userInputLayout.addWidget(self.passwordLineEdit, 2, 2, 1, 1)
 
-        self.userLoginButton = QPushButton(self.userButtonFrame)
-        self.userLoginButton.clicked.connect(lambda: self.loginClicked(self.usernameLineEdit.text(), self.passwordLineEdit.text()))
-        self.userLoginButton.setText("Login")
-        self.userRegisterButton = QPushButton(self.userButtonFrame)
-        self.userRegisterButton.clicked.connect(lambda: self.registerClicked(self.usernameLineEdit.text(), self.passwordLineEdit.text()))
-        self.userRegisterButton.setText("Register")
+        self.loginButton = QPushButton(self.userButtonFrame)
+        self.loginButton.clicked.connect(lambda: self.loginClicked(self.usernameLineEdit.text(), self.passwordLineEdit.text()))
+        self.loginButton.setText("Login")
+        self.registerButton = QPushButton(self.userButtonFrame)
+        self.registerButton.clicked.connect(lambda: self.registerClicked(self.usernameLineEdit.text(), self.passwordLineEdit.text()))
+        self.registerButton.setText("Register")
 
-        self.userButtonLayout.addWidget(self.userLoginButton)
-        self.userButtonLayout.addWidget(self.userRegisterButton)
-
-        self.dataWidget = QWidget(self)
+        self.userButtonLayout.addWidget(self.loginButton)
+        self.userButtonLayout.addWidget(self.registerButton)
 
         self.dataLayout = QVBoxLayout(self.dataWidget)
         self.dataDisplayFrame = QFrame(self.dataWidget)
         self.dataStorageFrame = QFrame(self.dataWidget)
+        self.dataButtonFrame = QFrame(self.dataWidget)
 
         self.dataLayout.addWidget(self.dataDisplayFrame)
         self.dataLayout.addWidget(self.dataStorageFrame)
+        self.dataLayout.addWidget(self.dataButtonFrame)
 
         self.dataDisplayLayout = QGridLayout(self.dataDisplayFrame)
         self.dataStorageLayout = QVBoxLayout(self.dataStorageFrame)
+        self.dataButtonLayout = QHBoxLayout(self.dataButtonFrame)
 
         self.currentUsernameLabel = QLabel(self.dataDisplayFrame)
         self.currentUsernameLabel.setText("Username:")
@@ -80,45 +90,56 @@ class UI(QMainWindow):
 
         self.dataStorageLayout.addWidget(self.dataStorageTextEdit)
 
-        self.dataWidget.hide()
+        self.saveContentButton = QPushButton(self.dataButtonFrame)
+        self.saveContentButton.clicked.connect(lambda: saveContent(self.currentUsernameDisplayLabel.text(), self.dataStorageTextEdit.toPlainText()))
+        self.saveContentButton.setText("Save")
+        self.logoutButton = QPushButton(self.dataButtonFrame)
+        self.logoutButton.clicked.connect(self.userPage)
+        self.logoutButton.setText("Logout")
+
+        self.dataButtonLayout.addWidget(self.saveContentButton)
+        self.dataButtonLayout.addWidget(self.logoutButton)
 
     def loginClicked(self, username, password):
-        usernameMatched = (userdata["username"].str.lower() == username.lower())
-
-        if any(usernameMatched):
-            username = userdata.loc[usernameMatched, "username"].item()
-            if hl.sha256(password.encode()).hexdigest() == userdata.loc[usernameMatched, "password"].item():
-                print("Logged in successfully!")
-                self.loginUser(username)
-            else:
-                self.error("invalidCredentials")
+        if loginUser(username, password, self.userdata) == "success":
+            print("Logged in successfully!")
+            self.dataPage(username)
         else:
-            self.error("invalidCredentials")
+            self.error(loginUser(username, password, self.userdata))
 
     def registerClicked(self, username, password):
-        if createUsername(username) == "success":
+        if createUsername(username, self.userdata) == "success":
             if createPassword(password) == "success":
                 print("Registered successfully!")
-                registerUser(username, password)
-                self.loginUser(username)
+                registerUser(username, password, self.userdata)
+                self.readData()
+                self.dataPage(username)
             else:
                 self.error(createPassword(password))
         else:
             self.error(createUsername(username))
-
-    def loginUser(self, username):
-        self.userWidget.hide()
-        self.dataWidget.show()
-        self.setCentralWidget(self.dataWidget)
-        self.currentUsernameDisplayLabel.setText(username)
     
     def changePasswordClicked(self, username, password):
         if createPassword(password) == "success":
             print("Changed password successfully!")
-            changePassword(username, password)
+            changePassword(username, password, self.userdata)
+            self.readData()
         else:
             self.error(createPassword(password))
+    
+    def dataPage(self, username):
+        self.mainWidget.setCurrentWidget(self.dataWidget)
+        self.currentUsernameDisplayLabel.setText(username.lower())
+        self.usernameLineEdit.clear()
+        self.passwordLineEdit.clear()
 
+    def userPage(self):
+        self.mainWidget.setCurrentWidget(self.userWidget)
+        self.newPasswordLineEdit.clear()
+    
+    def readData(self):
+        self.userdata = pd.read_excel("userdata.xlsx")
+    
     def error(self, id):
         if id == "invalidCredentials":
             print("Credentials are invalid!")

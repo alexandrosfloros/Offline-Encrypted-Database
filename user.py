@@ -2,10 +2,10 @@ from string import *
 import hashlib as hl
 import pandas as pd
 
-def createUsername(username):
+def createUsername(username, userdata):
     usernameInvalid = any(c not in usernameReq for c in username)
     usernameLength = len(username)
-    usernameTaken = any(userdata["username"].str.lower() == username.lower())
+    usernameTaken = any(userdata["username"] == username.lower())
 
     if usernameInvalid:
         return "invalidUsername"
@@ -35,29 +35,37 @@ def createPassword(password):
     else:
         return "success"
 
-def changePassword(username, password):
+def loginUser(username, password, userdata):
+    usernameMatched = (userdata["username"] == username.lower())
+
+    if any(usernameMatched):
+        if hl.sha256(password.encode()).hexdigest() == userdata.loc[usernameMatched, "password"].item():
+            return "success"
+        else:
+            return "invalidCredentials"
+    else:
+        return "invalidCredentials"
+
+def changePassword(username, password, userdata):
     password = hl.sha256(password.encode()).hexdigest()
     userdata.loc[userdata["username"] == username, "password"] = password
-    save(userdata)
+    saveData(userdata)
 
-def registerUser(username, password):
+def saveContent(username, content, userdata):
+    pass
+
+def registerUser(username, password, userdata):
     defaultData = {
-        "username": username,
+        "username": username.lower(),
         "password": hl.sha256(password.encode()).hexdigest()
     }
 
-    data = userdata.append(defaultData, ignore_index = True)
-    save(data)
+    userdata = userdata.append(defaultData, ignore_index = True)
+    
+    saveData(userdata)
 
-def read():
-    global userdata
-    userdata = pd.read_excel("userdata.xlsx")
-
-def save(data):
-    data.set_index("username").sort_index().to_excel("userdata.xlsx")
-    read()
+def saveData(userdata):
+    userdata.set_index("username").sort_index().to_excel("userdata.xlsx")
 
 usernameReq = ascii_letters + digits + "_-."
 passwordReq = ascii_letters + digits + punctuation
-
-read()
