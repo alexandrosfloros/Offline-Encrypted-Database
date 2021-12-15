@@ -91,7 +91,7 @@ class UI(QMainWindow):
         self.dataStorageLayout.addWidget(self.dataStorageTextEdit)
 
         self.saveContentButton = QPushButton(self.dataButtonFrame)
-        self.saveContentButton.clicked.connect(lambda: saveContent(self.currentUsernameDisplayLabel.text(), self.dataStorageTextEdit.toPlainText()))
+        self.saveContentButton.clicked.connect(lambda: saveContent(self.currentUsernameDisplayLabel.text(), self.dataStorageTextEdit.toPlainText(), self.userdata))
         self.saveContentButton.setText("Save")
         self.logoutButton = QPushButton(self.dataButtonFrame)
         self.logoutButton.clicked.connect(self.userPage)
@@ -102,7 +102,6 @@ class UI(QMainWindow):
 
     def loginClicked(self, username, password):
         if loginUser(username, password, self.userdata) == "success":
-            print("Logged in successfully!")
             self.dataPage(username)
         else:
             self.error(loginUser(username, password, self.userdata))
@@ -110,7 +109,6 @@ class UI(QMainWindow):
     def registerClicked(self, username, password):
         if createUsername(username, self.userdata) == "success":
             if createPassword(password) == "success":
-                print("Registered successfully!")
                 registerUser(username, password, self.userdata)
                 self.readData()
                 self.dataPage(username)
@@ -121,7 +119,6 @@ class UI(QMainWindow):
     
     def changePasswordClicked(self, username, password):
         if createPassword(password) == "success":
-            print("Changed password successfully!")
             changePassword(username, password, self.userdata)
             self.readData()
         else:
@@ -130,6 +127,11 @@ class UI(QMainWindow):
     def dataPage(self, username):
         self.mainWidget.setCurrentWidget(self.dataWidget)
         self.currentUsernameDisplayLabel.setText(username.lower())
+        content = self.userdata.loc[self.userdata["username"] == username.lower(), "content"].item()
+        if pd.isna(content):
+            self.dataStorageTextEdit.setText("")
+        else:
+            self.dataStorageTextEdit.setText(content)
         self.usernameLineEdit.clear()
         self.passwordLineEdit.clear()
 

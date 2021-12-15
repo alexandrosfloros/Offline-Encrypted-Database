@@ -52,7 +52,8 @@ def changePassword(username, password, userdata):
     saveData(userdata)
 
 def saveContent(username, content, userdata):
-    pass
+    userdata.loc[userdata["username"] == username, "content"] = content
+    saveData(userdata)
 
 def registerUser(username, password, userdata):
     defaultData = {
