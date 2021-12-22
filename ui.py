@@ -47,10 +47,10 @@ class UI(QMainWindow):
         self.userInputLayout.addWidget(self.passwordLineEdit, 2, 2, 1, 1)
 
         self.loginButton = QPushButton(self.userButtonFrame)
-        self.loginButton.clicked.connect(lambda: self.loginClicked(self.usernameLineEdit.text(), self.passwordLineEdit.text()))
+        self.loginButton.clicked.connect(self.loginClicked)
         self.loginButton.setText("Login")
         self.registerButton = QPushButton(self.userButtonFrame)
-        self.registerButton.clicked.connect(lambda: self.registerClicked(self.usernameLineEdit.text(), self.passwordLineEdit.text()))
+        self.registerButton.clicked.connect(self.registerClicked)
         self.registerButton.setText("Register")
 
         self.userButtonLayout.addWidget(self.loginButton)
@@ -77,7 +77,7 @@ class UI(QMainWindow):
         self.newPasswordLineEdit = QLineEdit(self.dataDisplayFrame)
         self.newPasswordLineEdit.setEchoMode(QLineEdit.EchoMode.Password)
         self.changePasswordButton = QPushButton(self.dataDisplayFrame)
-        self.changePasswordButton.clicked.connect(lambda: self.changePasswordClicked(self.currentUsernameDisplayLabel.text(), self.newPasswordLineEdit.text()))
+        self.changePasswordButton.clicked.connect(self.changePasswordClicked)
         self.changePasswordButton.setText("Change")
 
         self.dataDisplayLayout.addWidget(self.currentUsernameLabel, 1, 1, 1, 1)
@@ -91,8 +91,8 @@ class UI(QMainWindow):
         self.dataStorageLayout.addWidget(self.dataStorageTextEdit)
 
         self.saveContentButton = QPushButton(self.dataButtonFrame)
-        self.saveContentButton.clicked.connect(lambda: saveContent(self.currentUsernameDisplayLabel.text(), self.dataStorageTextEdit.toPlainText(), self.userdata))
-        self.saveContentButton.setText("Save")
+        self.saveContentButton.clicked.connect(self.saveClicked)
+        self.saveContentButton.setText("Save and Logout")
         self.logoutButton = QPushButton(self.dataButtonFrame)
         self.logoutButton.clicked.connect(self.userPage)
         self.logoutButton.setText("Logout")
@@ -100,42 +100,70 @@ class UI(QMainWindow):
         self.dataButtonLayout.addWidget(self.saveContentButton)
         self.dataButtonLayout.addWidget(self.logoutButton)
 
-    def loginClicked(self, username, password):
+    def loginClicked(self):
+        username = self.usernameLineEdit.text()
+        password = self.passwordLineEdit.text()
+
         if loginUser(username, password, self.userdata) == "success":
+            self.password = password
             self.dataPage(username)
         else:
             self.error(loginUser(username, password, self.userdata))
 
-    def registerClicked(self, username, password):
+    def registerClicked(self):
+        username = self.usernameLineEdit.text()
+        password = self.passwordLineEdit.text()
+
         if createUsername(username, self.userdata) == "success":
             if createPassword(password) == "success":
                 registerUser(username, password, self.userdata)
                 self.readData()
+
+                self.password = password
                 self.dataPage(username)
             else:
                 self.error(createPassword(password))
         else:
             self.error(createUsername(username))
     
-    def changePasswordClicked(self, username, password):
+    def changePasswordClicked(self):
+        username = self.currentUsernameDisplayLabel.text()
+        password = self.newPasswordLineEdit.text()
+        userdata = self.userdata
+
         if createPassword(password) == "success":
-            changePassword(username, password, self.userdata)
+            changePassword(username, password, userdata)
             self.readData()
+
+            self.password = password
         else:
             self.error(createPassword(password))
     
+    def saveClicked(self):
+        username = self.currentUsernameDisplayLabel.text()
+        password = self.password
+        content = self.dataStorageTextEdit.toPlainText()
+        userdata = self.userdata
+
+        saveContent(username, password, content, userdata)
+        self.userPage()
+
     def dataPage(self, username):
         self.mainWidget.setCurrentWidget(self.dataWidget)
         self.currentUsernameDisplayLabel.setText(username.lower())
         content = self.userdata.loc[self.userdata["username"] == username.lower(), "content"].item()
+        
         if pd.isna(content):
             self.dataStorageTextEdit.setText("")
         else:
+            content = decryptData(content, self.password)
             self.dataStorageTextEdit.setText(content)
+        
         self.usernameLineEdit.clear()
         self.passwordLineEdit.clear()
 
     def userPage(self):
+        self.readData()
         self.mainWidget.setCurrentWidget(self.userWidget)
         self.newPasswordLineEdit.clear()
     

@@ -1,5 +1,6 @@
 from string import *
 import hashlib as hl
+from base64 import urlsafe_b64encode, urlsafe_b64decode
 import pandas as pd
 
 def createUsername(username, userdata):
@@ -51,7 +52,9 @@ def changePassword(username, password, userdata):
     userdata.loc[userdata["username"] == username, "password"] = password
     saveData(userdata)
 
-def saveContent(username, content, userdata):
+def saveContent(username, password, content, userdata):
+    content = encryptData(content, password)
+
     userdata.loc[userdata["username"] == username, "content"] = content
     saveData(userdata)
 
@@ -67,6 +70,12 @@ def registerUser(username, password, userdata):
 
 def saveData(userdata):
     userdata.set_index("username").sort_index().to_excel("userdata.xlsx")
+
+def encryptData(content, password):
+    return urlsafe_b64encode(bytes(password + content, "utf-8"))
+
+def decryptData(content, password):
+    return urlsafe_b64decode(bytes(content[2:-1], "utf-8"))[len(password):].decode("utf-8")
 
 usernameReq = ascii_letters + digits + "_-."
 passwordReq = ascii_letters + digits + punctuation
