@@ -103,20 +103,22 @@ class UI(QMainWindow):
     def loginClicked(self):
         username = self.usernameLineEdit.text()
         password = self.passwordLineEdit.text()
+        userdata = self.userdata
 
-        if loginUser(username, password, self.userdata) == "success":
+        if loginUser(username, password, userdata) == "success":
             self.password = password
             self.dataPage(username)
         else:
-            self.error(loginUser(username, password, self.userdata))
+            self.error(loginUser(username, password, userdata))
 
     def registerClicked(self):
         username = self.usernameLineEdit.text()
         password = self.passwordLineEdit.text()
+        userdata = self.userdata
 
-        if createUsername(username, self.userdata) == "success":
+        if createUsername(username, userdata) == "success":
             if createPassword(password) == "success":
-                registerUser(username, password, self.userdata)
+                registerUser(username, password, userdata)
                 self.readData()
 
                 self.password = password
@@ -124,7 +126,7 @@ class UI(QMainWindow):
             else:
                 self.error(createPassword(password))
         else:
-            self.error(createUsername(username))
+            self.error(createUsername(username, userdata))
     
     def changePasswordClicked(self):
         username = self.currentUsernameDisplayLabel.text()
@@ -172,20 +174,26 @@ class UI(QMainWindow):
     
     def error(self, id):
         if id == "invalidCredentials":
-            print("Credentials are invalid!")
+            message = "Credentials are invalid!"
+        elif id == "noUsername":
+            message = "Username is missing!"
+        elif id == "noPassword":
+            message = "Password is missing!"
         elif id == "invalidUsername":
-            print("Username contains invalid characters!")
+            message = "Username contains invalid characters!"
         elif id == "shortUsername":
-            print("Username must be at least 3 characters!")
+            message = "Username must be at least 3 characters!"
         elif id == "longUsername":
-            print("Username must be at most 16 characters!")
+            message = "Username must be at most 16 characters!"
         elif id == "unavailableUsername":
-            print("Username is unavailable!")
+            message = "Username is unavailable!"
         elif id == "invalidPassword":
-            print("Password contains invalid characters!")
+            message = "Password contains invalid characters!"
         elif id == "shortPassword":
-            print("Password must be at least 8 characters")
+            message = "Password must be at least 8 characters"
         elif id == "longPassword":
-            print("Password must be at most 32 characters!")
+            message = "Password must be at most 32 characters!"
         elif id == "insecurePassword":
-            print("Password is insecure!")
+            message = "Password must contain at least one lowercase character, one uppercase character, one number and one special character!"
+        
+        errorMessage = QMessageBox.critical(self, "Error", message)

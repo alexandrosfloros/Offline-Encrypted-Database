@@ -8,7 +8,9 @@ def createUsername(username, userdata):
     usernameLength = len(username)
     usernameTaken = any(userdata["username"] == username.lower())
 
-    if usernameInvalid:
+    if usernameLength == 0:
+        return "noUsername"
+    elif usernameInvalid:
         return "invalidUsername"
     elif usernameLength < 3:
         return "shortUsername"
@@ -25,7 +27,9 @@ def createPassword(password):
     passwordInsecure = not any(c in ascii_lowercase for c in password) or not any(c in ascii_uppercase for c in password) \
     or not any(c in digits for c in password) or not any(c in punctuation for c in password)
 
-    if passwordInvalid:
+    if passwordLength == 0:
+        return "noPassword"
+    elif passwordInvalid:
         return "invalidPassword"
     elif passwordLength < 8:
         return "shortPassword"
