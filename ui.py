@@ -131,13 +131,14 @@ class UI(QMainWindow):
     def changePasswordClicked(self):
         username = self.currentUsernameDisplayLabel.text()
         password = self.newPasswordLineEdit.text()
+        content = self.content
         userdata = self.userdata
 
         if createPassword(password) == "success":
             changePassword(username, password, userdata)
-            self.readData()
-
             self.password = password
+
+            saveContent(username, password, content, userdata)
         else:
             self.error(createPassword(password))
     
@@ -148,18 +149,20 @@ class UI(QMainWindow):
         userdata = self.userdata
 
         saveContent(username, password, content, userdata)
+        self.content = content
+
         self.userPage()
 
     def dataPage(self, username):
         self.mainWidget.setCurrentWidget(self.dataWidget)
         self.currentUsernameDisplayLabel.setText(username.lower())
-        content = self.userdata.loc[self.userdata["username"] == username.lower(), "content"].item()
+        self.content = self.userdata.loc[self.userdata["username"] == username.lower(), "content"].item()
         
-        if pd.isna(content):
+        if pd.isna(self.content):
             self.dataStorageTextEdit.setText("")
         else:
-            content = decryptData(content, self.password)
-            self.dataStorageTextEdit.setText(content)
+            self.content = encryptContent(self.content, self.password, -1)
+            self.dataStorageTextEdit.setText(self.content)
         
         self.usernameLineEdit.clear()
         self.passwordLineEdit.clear()
