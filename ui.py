@@ -6,7 +6,7 @@ class UI(QMainWindow):
         self.readData()
 
         super().__init__()
-        self.setWindowTitle("Database")
+        self.setWindowTitle("Offline Encrypted Database")
         self.setGeometry(0, 0, 400, 300)
 
         self.mainWidget = QStackedWidget(self)
