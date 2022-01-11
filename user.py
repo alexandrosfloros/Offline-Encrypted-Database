@@ -56,7 +56,10 @@ def changePassword(username, password, userdata):
     saveData(userdata)
 
 def saveContent(username, password, content, userdata):
-    content = encryptContent(content, password, 1)
+    if isinstance(content, str):
+        content = encryptContent(content, password, 1)
+    else:
+        content = ""
 
     userdata.loc[userdata["username"] == username, "content"] = content
     saveData(userdata)
