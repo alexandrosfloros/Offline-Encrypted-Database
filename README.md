@@ -19,7 +19,11 @@ Other features:
 * Secure encryption algorithm based on the password
 * Robust to problematic inputs
 
-# Use
+# How to use
+
+## Execution
+
+The file used to run the project is ``main.py``.
 
 ## Accounts
 
