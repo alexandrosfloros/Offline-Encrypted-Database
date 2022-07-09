@@ -1,6 +1,11 @@
-from string import *
-import hashlib as hl
+import string
+import hashlib
+import base64
 import pandas as pd
+
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 def createUsername(username, userdata):
     usernameInvalid = any(c not in usernameReq for c in username)
@@ -23,8 +28,8 @@ def createUsername(username, userdata):
 def createPassword(password):
     passwordInvalid = any(c not in passwordReq for c in password)
     passwordLength = len(password)
-    passwordInsecure = not any(c in ascii_lowercase for c in password) or not any(c in ascii_uppercase for c in password) \
-    or not any(c in digits for c in password) or not any(c in punctuation for c in password)
+    passwordInsecure = not any(c in string.ascii_lowercase for c in password) or not any(c in string.ascii_uppercase for c in password) \
+    or not any(c in string.digits for c in password) or not any(c in string.punctuation for c in password)
 
     if passwordLength == 0:
         return "noPassword"
@@ -43,7 +48,7 @@ def loginUser(username, password, userdata):
     usernameMatched = (userdata["username"] == username.lower())
 
     if any(usernameMatched):
-        if hl.sha256(password.encode()).hexdigest() == userdata.loc[usernameMatched, "password"].item():
+        if hashlib.sha256(password.encode()).hexdigest() == userdata.loc[usernameMatched, "password"].item():
             return "success"
         else:
             return "invalidCredentials"
@@ -51,13 +56,13 @@ def loginUser(username, password, userdata):
         return "invalidCredentials"
 
 def changePassword(username, password, userdata):
-    password = hl.sha256(password.encode()).hexdigest()
+    password = hashlib.sha256(password.encode()).hexdigest()
     userdata.loc[userdata["username"] == username, "password"] = password
     saveData(userdata)
 
 def saveContent(username, password, content, userdata):
     if isinstance(content, str):
-        content = encryptContent(content, password, 1)
+        content = encryptContent(content, password, "encrypt")
     else:
         content = ""
 
@@ -67,32 +72,27 @@ def saveContent(username, password, content, userdata):
 def registerUser(username, password, userdata):
     defaultData = {
         "username": username.lower(),
-        "password": hl.sha256(password.encode()).hexdigest()
+        "password": hashlib.sha256(password.encode()).hexdigest()
     }
 
-    userdata = userdata.append(defaultData, ignore_index = True)
+    userdata = userdata.concat(defaultData, ignore_index = True)
     
     saveData(userdata)
 
 def saveData(userdata):
     userdata.set_index("username").sort_index().to_excel("userdata.xlsx")
 
-def cipherShift(char, shift):
-    return cipherAlphabet[(cipherAlphabet.find(char) + shift) % 95]
+def encryptContent(content, password, mode):
+    kdf = PBKDF2HMAC(algorithm = hashes.SHA256(), length = 32, salt = salt, iterations = 390000)
+    key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
+    fernet = Fernet(key)
 
-def encryptContent(content, key, mode):
-    keyLength = len(key)
-    out = ""
+    if mode == "encrypt":
+        return fernet.encrypt(content.encode()).decode()
+    else:
+        return fernet.decrypt(content.encode()).decode()
 
-    for n, char in enumerate(content):
-        if char in cipherAlphabet:
-            m = n % keyLength
-            shift = printable.find(key[m])
-            out += cipherShift(char, shift * mode)
-        else:
-            out += char
-    return out
+usernameReq = string.ascii_letters + string.digits + "_-."
+passwordReq = string.ascii_letters + string.digits + string.punctuation
 
-usernameReq = ascii_letters + digits + "_-."
-passwordReq = ascii_letters + digits + punctuation
-cipherAlphabet = printable[:-5]
+salt = b"\x8aO%kR\xe32l\xf6\x00\x99\x13\xb0\xbdb\x9c"

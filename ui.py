@@ -161,7 +161,7 @@ class UI(QMainWindow):
         if pd.isna(self.content):
             self.dataStorageTextEdit.setText("")
         else:
-            self.content = encryptContent(self.content, self.password, -1)
+            self.content = encryptContent(self.content, self.password, "decrypt")
             self.dataStorageTextEdit.setText(self.content)
         
         self.usernameLineEdit.clear()
