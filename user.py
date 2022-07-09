@@ -75,7 +75,7 @@ def registerUser(username, password, userdata):
         "password": hashlib.sha256(password.encode()).hexdigest()
     }
 
-    userdata = userdata.concat(defaultData, ignore_index = True)
+    userdata = userdata.append(defaultData, ignore_index = True)
     
     saveData(userdata)
 
