@@ -1,7 +1,3 @@
-# Overview
-
-This is an application used to store encrypted text in a computer, which can only be decrypted upon entering certain login credentials.
-
 # Motivation
 
 This project was originally made for personal use to securely store sensitive information locally behind a login system, across one or more user accounts.
