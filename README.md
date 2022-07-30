@@ -1,6 +1,6 @@
 # Overview
 
-This is an application used to store encrypted text in an excel spreadsheet database, which can only be decrypted upon entering certain login credentials.
+This is an application used to store encrypted text in a computer, which can only be decrypted upon entering certain login credentials.
 
 # Motivation
 
