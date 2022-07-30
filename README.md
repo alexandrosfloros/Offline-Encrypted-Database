@@ -4,18 +4,18 @@ This project was originally made for personal use to securely store sensitive in
 
 # Features
 
-Main features:
+Main Features:
 
 * Ability to register multiple accounts to store data
 * Ability to change password upon logging in
 
-Other features:
+Other Features:
 
 * Secure password verification using ``sha256``
 * Secure encryption algorithm based on the password
 * Robust to problematic inputs
 
-# How to use
+# How to Use
 
 ## Execution
 
