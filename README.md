@@ -1,6 +1,6 @@
 # Motivation
 
-This project was originally made for personal use to securely store sensitive information locally behind a login system, across one or more user accounts.
+This project was originally made for personal use to securely store sensitive information locally, behind a login system, across one or more user accounts.
 
 # Features
 
@@ -23,7 +23,7 @@ The file used to run the project is ``main.py``.
 
 ## Accounts
 
-An account can be created by selecting an appropriate username and password, and clicking on the "Register" button. Upon registering, the user will be logged in and able to access their account's interface. Alternatively, they may login to an existing account by inserting the right credentials and clicking on the "Login" button.
+An account can be created by selecting an appropriate username and password, and clicking on the "Register" button. Upon registering, the user is logged in and able to access their account's profile. Alternatively, they may login to an existing account by inserting the right credentials and clicking on the "Login" button.
 
 ## User Interface
 
