@@ -1,7 +1,3 @@
-# Motivation
-
-This project was originally made for personal use to securely store sensitive information locally, behind a login system, across one or more user accounts.
-
 # Features
 
 Main Features:
