@@ -8,7 +8,7 @@ Main Features:
 Other Features:
 
 * Secure password verification using ``sha256``
-* Secure encryption algorithm based on the password
+* Secure data encryption based on the password
 * Robust to problematic inputs
 
 # How to Use
