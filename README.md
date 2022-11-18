@@ -23,4 +23,4 @@ An account can be created by selecting an appropriate username and password, and
 
 ## User Interface
 
-When logged in, the user can write text in the text box provided and, when done, they can save and quit by clicking on the "Save and Logout" button. Alternatively, they may quit without saving any changes by simply clicking on the "Logout" button. The password can be changed by inserting the new one in the field provided and clicking on the "Change" button.
+When logged in, the user can write text in the text box provided, and, when done, they can save and quit by clicking on the "Save and Logout" button. Alternatively, they may quit without saving any changes by simply clicking on the "Logout" button. The password can be changed by inserting the new one in the field provided and clicking on the "Change" button.
