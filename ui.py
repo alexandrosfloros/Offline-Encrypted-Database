@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import *
 from user import *
 
+
 class UI(QMainWindow):
     def __init__(self):
         self.readData()
@@ -24,7 +25,7 @@ class UI(QMainWindow):
         self.userButtonFrame = QFrame(self.userWidget)
         self.userHiddenFrame1 = QFrame(self.userWidget)
         self.userHiddenFrame2 = QFrame(self.userWidget)
-        
+
         self.userLayout.addWidget(self.userInputFrame)
         self.userLayout.addWidget(self.userButtonFrame)
         self.userLayout.addWidget(self.userHiddenFrame1)
@@ -32,7 +33,7 @@ class UI(QMainWindow):
 
         self.userInputLayout = QGridLayout(self.userInputFrame)
         self.userButtonLayout = QHBoxLayout(self.userButtonFrame)
-        
+
         self.usernameLabel = QLabel(self.userInputFrame)
         self.usernameLabel.setText("Username:")
         self.usernameLineEdit = QLineEdit(self.userInputFrame)
@@ -127,7 +128,7 @@ class UI(QMainWindow):
                 self.error(createPassword(password))
         else:
             self.error(createUsername(username, userdata))
-    
+
     def changePasswordClicked(self):
         username = self.currentUsernameDisplayLabel.text()
         password = self.newPasswordLineEdit.text()
@@ -141,7 +142,7 @@ class UI(QMainWindow):
             saveContent(username, password, content, userdata)
         else:
             self.error(createPassword(password))
-    
+
     def saveClicked(self):
         username = self.currentUsernameDisplayLabel.text()
         password = self.password
@@ -156,14 +157,16 @@ class UI(QMainWindow):
     def dataPage(self, username):
         self.mainWidget.setCurrentWidget(self.dataWidget)
         self.currentUsernameDisplayLabel.setText(username.lower())
-        self.content = self.userdata.loc[self.userdata["username"] == username.lower(), "content"].item()
-        
+        self.content = self.userdata.loc[
+            self.userdata["username"] == username.lower(), "content"
+        ].item()
+
         if pd.isna(self.content):
             self.dataStorageTextEdit.setText("")
         else:
             self.content = encryptContent(self.content, self.password, "decrypt")
             self.dataStorageTextEdit.setText(self.content)
-        
+
         self.usernameLineEdit.clear()
         self.passwordLineEdit.clear()
 
@@ -171,10 +174,10 @@ class UI(QMainWindow):
         self.readData()
         self.mainWidget.setCurrentWidget(self.userWidget)
         self.newPasswordLineEdit.clear()
-    
+
     def readData(self):
         self.userdata = pd.read_excel("userdata.xlsx")
-    
+
     def error(self, id):
         if id == "invalidCredentials":
             message = "Credentials are invalid!"
@@ -198,5 +201,5 @@ class UI(QMainWindow):
             message = "Password must be at most 32 characters!"
         elif id == "insecurePassword":
             message = "Password must contain at least one lowercase character, one uppercase character, one number and one special character!"
-        
+
         errorMessage = QMessageBox.critical(self, "Error", message)
