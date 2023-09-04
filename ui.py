@@ -88,17 +88,18 @@ class UI(QMainWindow):
         self.dataDisplayLayout.addWidget(self.changePasswordButton, 2, 3, 1, 1)
 
         self.dataStorageTextEdit = QTextEdit(self.dataStorageFrame)
+        self.dataStorageTextEdit.textChanged.connect(self.contentChanged)
 
         self.dataStorageLayout.addWidget(self.dataStorageTextEdit)
 
-        self.saveContentButton = QPushButton(self.dataButtonFrame)
-        self.saveContentButton.clicked.connect(self.saveClicked)
-        self.saveContentButton.setText("Save and Logout")
+        self.saveDataButton = QPushButton(self.dataButtonFrame)
+        self.saveDataButton.clicked.connect(self.saveClicked)
+        self.saveDataButton.setText("Save")
         self.logoutButton = QPushButton(self.dataButtonFrame)
-        self.logoutButton.clicked.connect(self.userPage)
+        self.logoutButton.clicked.connect(self.logoutClicked)
         self.logoutButton.setText("Logout")
 
-        self.dataButtonLayout.addWidget(self.saveContentButton)
+        self.dataButtonLayout.addWidget(self.saveDataButton)
         self.dataButtonLayout.addWidget(self.logoutButton)
 
     def loginClicked(self):
@@ -135,13 +136,24 @@ class UI(QMainWindow):
         content = self.content
         userdata = self.userdata
 
-        if createPassword(password) == "success":
+        passwordStatus = createPassword(password)
+
+        if passwordStatus == "success":
             changePassword(username, password, userdata)
             self.password = password
 
-            saveContent(username, password, content, userdata)
+            saveData(username, password, content, userdata)
+
+            successMessage = QMessageBox.information(
+                self, "Success", "Changed password successfully!"
+            )
         else:
-            self.error(createPassword(password))
+            self.error(passwordStatus)
+
+        self.newPasswordLineEdit.clear()
+
+    def contentChanged(self):
+        self.contentChanged = True
 
     def saveClicked(self):
         username = self.currentUsernameDisplayLabel.text()
@@ -149,8 +161,26 @@ class UI(QMainWindow):
         content = self.dataStorageTextEdit.toPlainText()
         userdata = self.userdata
 
-        saveContent(username, password, content, userdata)
+        saveData(username, password, content, userdata)
         self.content = content
+        self.contentChanged = False
+
+        successMessage = QMessageBox.information(
+            self, "Success", "Saved content successfully!"
+        )
+
+    def logoutClicked(self):
+        if self.contentChanged == True:
+            answer = QMessageBox.question(
+                self,
+                "Confirmation",
+                "Quit without saving?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                defaultButton=QMessageBox.StandardButton.No,
+            )
+
+            if answer == QMessageBox.StandardButton.No:
+                return
 
         self.userPage()
 
@@ -169,6 +199,8 @@ class UI(QMainWindow):
 
         self.usernameLineEdit.clear()
         self.passwordLineEdit.clear()
+
+        self.contentChanged = False
 
     def userPage(self):
         self.readData()
@@ -196,7 +228,7 @@ class UI(QMainWindow):
         elif id == "invalidPassword":
             message = "Password contains invalid characters!"
         elif id == "shortPassword":
-            message = "Password must be at least 8 characters"
+            message = "Password must be at least 8 characters!"
         elif id == "longPassword":
             message = "Password must be at most 32 characters!"
         elif id == "insecurePassword":

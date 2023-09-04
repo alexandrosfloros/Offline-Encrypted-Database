@@ -71,17 +71,17 @@ def loginUser(username, password, userdata):
 def changePassword(username, password, userdata):
     password = hashlib.sha256(password.encode()).hexdigest()
     userdata.loc[userdata["username"] == username, "password"] = password
-    saveData(userdata)
+    writeData(userdata)
 
 
-def saveContent(username, password, content, userdata):
-    if isinstance(content, str):
-        content = encryptContent(content, password, "encrypt")
-    else:
+def saveData(username, password, content, userdata):
+    if pd.isna(content):
         content = ""
+    else:
+        content = encryptContent(content, password, "encrypt")
 
     userdata.loc[userdata["username"] == username, "content"] = content
-    saveData(userdata)
+    writeData(userdata)
 
 
 def registerUser(username, password, userdata):
@@ -95,10 +95,10 @@ def registerUser(username, password, userdata):
 
     userdata = pd.concat([userdata, defaultData], ignore_index=True)
 
-    saveData(userdata)
+    writeData(userdata)
 
 
-def saveData(userdata):
+def writeData(userdata):
     userdata.set_index("username").sort_index().to_excel("userdata.xlsx")
 
 
