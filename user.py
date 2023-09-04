@@ -1,6 +1,8 @@
 import string
 import hashlib
 import base64
+import os
+import binascii
 import pandas as pd
 
 from cryptography.fernet import Fernet
@@ -100,18 +102,24 @@ def saveData(userdata):
     userdata.set_index("username").sort_index().to_excel("userdata.xlsx")
 
 
-def encryptContent(content, password, mode):
+def createKey(password, salt):
     kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=390000)
     key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
-    fernet = Fernet(key)
+    return Fernet(key)
 
+
+def encryptContent(content, password, mode):
     if mode == "encrypt":
-        return fernet.encrypt(content.encode()).decode()
+        salt = os.urandom(16)
+        fernet = createKey(password, salt)
+        return (
+            binascii.b2a_hex(salt).decode() + fernet.encrypt(content.encode()).decode()
+        )
     else:
-        return fernet.decrypt(content.encode()).decode()
+        salt = binascii.a2b_hex(content[:32].encode())
+        fernet = createKey(password, salt)
+        return fernet.decrypt(content[32:].encode()).decode()
 
 
 usernameReq = string.ascii_letters + string.digits + "_-."
 passwordReq = string.ascii_letters + string.digits + string.punctuation
-
-salt = b"\x8aO%kR\xe32l\xf6\x00\x99\x13\xb0\xbdb\x9c"
