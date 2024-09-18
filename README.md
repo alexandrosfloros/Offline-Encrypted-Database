@@ -13,7 +13,7 @@ The file used to run the project is ``main.py``.
 
 ## Accounts
 
-An account can be created by selecting an appropriate username and password, and clicking on the "Register" button. Upon registering, users logged in and able to access their account's profile. Alternatively, they may log in to an existing account by inserting the right credentials and clicking on the "Login" button.
+An account can be created by selecting an appropriate username and password, and clicking on the "Register" button. Upon registering, users are logged in and able to access their account's profile. Alternatively, they may log in to an existing account by inserting the right credentials and clicking on the "Login" button.
 
 ## User Interface
 

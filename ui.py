@@ -110,6 +110,7 @@ class UI(QMainWindow):
         if loginUser(username, password, userdata) == "success":
             self.password = password
             self.dataPage(username)
+
         else:
             self.error(loginUser(username, password, userdata))
 
@@ -125,8 +126,10 @@ class UI(QMainWindow):
 
                 self.password = password
                 self.dataPage(username)
+
             else:
                 self.error(createPassword(password))
+
         else:
             self.error(createUsername(username, userdata))
 
@@ -147,6 +150,7 @@ class UI(QMainWindow):
             successMessage = QMessageBox.information(
                 self, "Success", "Changed password successfully!"
             )
+
         else:
             self.error(passwordStatus)
 
@@ -193,6 +197,7 @@ class UI(QMainWindow):
 
         if pd.isna(self.content):
             self.dataStorageTextEdit.setText("")
+
         else:
             self.content = encryptContent(self.content, self.password, "decrypt")
             self.dataStorageTextEdit.setText(self.content)
@@ -213,24 +218,34 @@ class UI(QMainWindow):
     def error(self, id):
         if id == "invalidCredentials":
             message = "Credentials are invalid!"
+
         elif id == "noUsername":
             message = "Username is missing!"
+
         elif id == "noPassword":
             message = "Password is missing!"
+
         elif id == "invalidUsername":
             message = "Username contains invalid characters!"
+
         elif id == "shortUsername":
             message = "Username must be at least 3 characters!"
+
         elif id == "longUsername":
             message = "Username must be at most 16 characters!"
+
         elif id == "unavailableUsername":
             message = "Username is unavailable!"
+
         elif id == "invalidPassword":
             message = "Password contains invalid characters!"
+
         elif id == "shortPassword":
             message = "Password must be at least 8 characters!"
+
         elif id == "longPassword":
             message = "Password must be at most 32 characters!"
+
         elif id == "insecurePassword":
             message = "Password must contain at least one lowercase character, one uppercase character, one number and one special character!"
 

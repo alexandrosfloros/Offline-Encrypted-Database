@@ -17,14 +17,19 @@ def createUsername(username, userdata):
 
     if usernameLength == 0:
         return "noUsername"
+
     elif usernameInvalid:
         return "invalidUsername"
+
     elif usernameLength < 3:
         return "shortUsername"
+
     elif usernameLength > 16:
         return "longUsername"
+
     elif usernameTaken:
         return "unavailableUsername"
+
     else:
         return "success"
 
@@ -41,14 +46,19 @@ def createPassword(password):
 
     if passwordLength == 0:
         return "noPassword"
+
     elif passwordInvalid:
         return "invalidPassword"
+
     elif passwordLength < 8:
         return "shortPassword"
+
     elif passwordLength > 32:
         return "longPassword"
+
     elif passwordInsecure:
         return "insecurePassword"
+
     else:
         return "success"
 
@@ -62,8 +72,10 @@ def loginUser(username, password, userdata):
             == userdata.loc[usernameMatched, "password"].item()
         ):
             return "success"
+
         else:
             return "invalidCredentials"
+
     else:
         return "invalidCredentials"
 
@@ -77,6 +89,7 @@ def changePassword(username, password, userdata):
 def saveData(username, password, content, userdata):
     if pd.isna(content):
         content = ""
+
     else:
         content = encryptContent(content, password, "encrypt")
 
@@ -105,6 +118,7 @@ def writeData(userdata):
 def createKey(password, salt):
     kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=390000)
     key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
+
     return Fernet(key)
 
 
@@ -112,12 +126,15 @@ def encryptContent(content, password, mode):
     if mode == "encrypt":
         salt = os.urandom(16)
         fernet = createKey(password, salt)
+
         return (
             binascii.b2a_hex(salt).decode() + fernet.encrypt(content.encode()).decode()
         )
+
     else:
         salt = binascii.a2b_hex(content[:32].encode())
         fernet = createKey(password, salt)
+
         return fernet.decrypt(content[32:].encode()).decode()
 
 
